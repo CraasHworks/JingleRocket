@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jingle Rocket</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            background: #000;
+            color: #fff;
+        }
+
+        #menu-overlay, #initials-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .menu-hidden {
+            display: none !important;
+        }
+
+        /* Loader styles */
+        #loader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        #loader-modal {
+            width: 70%;
+            background: #1e1e1e;
+            border: 2px solid #3f3f3f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #press-play {
+            font-size: 24px;
+            color: #0f0;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: blink 1s infinite;
+        }
+
+        #loading-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #000;
+            border: 1px solid #3f3f3f;
+            margin: 10px 0;
+        }
+
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background: #0f0;
+            transition: width 0.3s ease;
+        }
+
+        #loading-message {
+            color: #0f0;
+            font-size: 16px;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        #commodore-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                #000,
+                #000 10px,
+                #0f0 10px,
+                #0f0 20px
+            );
+            transition: opacity 0.5s ease;
+            z-index: -1;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Game menu styles */
+        .score-item {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        #initials-input {
+            font-size: 24px;
+            text-transform: uppercase;
+            width: 100px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        #final-score {
+            font-size: 32px;
+            margin: 20px 0;
+        }
+
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 24px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-weight: 400;
+            transition: transform 0.2s, font-size 0.2s;
+        }
+
+        #score-display.flash-green {
+            color: green;
+            font-size: 25px;
+            font-weight: 900;
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        #score-display.flash-red {
+            color: red;
+            font-weight: 400;
+            transform: translateX(-50%);
+        }
+
+        :root {
+    /* Traditional Christmas Color Palette */
+    --christmas-red: #C41E3A;       /* Deep, rich red */
+    --christmas-green: #006400;     /* Deep forest green */
+    --christmas-gold: #FFD700;      /* Classic gold */
+    --snow-white: #FFFFFF;          /* Pure white */
+}
+
+/* Festive H1 Style */
+h1 {
+    font-family: 'Brush Script MT', cursive;
+    color: #D32F2F; /* Christmas Red */
+    text-shadow: 2px 2px 5px #9C27B0, 0 0 10px #FFC107; /* Glow effect */
+    background: linear-gradient(90deg, #FF5252, #FFEB3B, #4CAF50, #FF5252);
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 6em;
+    animation: shimmer 3s linear infinite;
+}
+
+/* Festive H2 Style */
+h2 {
+    font-family: 'Times New Roman', serif;
+    color: var(--christmas-green);
+    border-bottom: 2px dotted var(--christmas-red);
+    font-size: 2.5rem;
+    padding-bottom: 0.3em;
+}
+
+/* Paragraph Style */
+p {
+    font-family: 'Arial', sans-serif;
+    color: var(--snow-white);
+    line-height: 1.6;
+}
+
+/* Instructions Section */
+.instructions {
+    color: var(--snow-white);
+    border: 2px solid var(--christmas-red);
+    border-radius: 20px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+/* Key Buttons */
+.instructions .key {
+    font-family: 'Courier New', monospace;
+    color: var(--christmas-gold);
+    border: 2px solid var(--christmas-green);
+    padding: 4px 8px;
+    margin: 0 3px;
+    background-color: #3f3f3f;
+    font-weight: bold;
+}
+
+/* Festive Item Highlight */
+.instructions .item {
+    color: var(--christmas-red);
+    font-weight: bold;
+}
+
+/* Boost Highlight */
+.instructions .boost {
+    color: var(--christmas-gold);
+    font-weight: bold;
+}
+
+/* Optional: Add a subtle hover effect */
+h1:hover, h2:hover {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+
+        .snowfall {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .snowflake {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="snowfall" id="snowfall"></div>
+    <div id="score-display">Score: 0</div>
+    <div id="loader-screen">
+        <div id="commodore-pattern"></div>
+        <div id="loader-modal">
+            <div id="press-play">Press Play on Tape</div>
+            <div id="loading-bar-container">
+                <div id="loading-bar"></div>
+            </div>
+            <div id="loading-message"></div>
+        </div>
+    </div>
+
+    <div id="menu-overlay">
+        <h1>Jingle Rocket Chaos</h1>
+        <div class="instructions">
+            <h2>How to Play</h2>
+            <p>
+                Move <button class="key">W</button> Up and <button class="key">S</button> Down.  
+                Shoot by pressing <button class="key">Space</button>.  
+                Aim with your <button class="key">Cursor</button>.
+            </p>
+            <p>
+                You get points by shooting stuff and collecting <span class="item">bells</span>.  
+                You lose points if items pass you.  
+                <span class="boost">Blue balls</span> boost your laser power!
+            </p>
+        </div>
+        <p>Press Enter to Start</p>
+        <div id="high-scores-list"></div>
+    </div>
+
+    <div id="initials-overlay" class="menu-hidden">
+        <h2>Game Over!</h2>
+        <p>Score: <span id="final-score">0</span></p>
+        <input type="text" id="initials-input" maxlength="3" placeholder="AAA">
+        <p>Press Enter to Submit</p>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+    <script>
+        function createSnowflake() {
+            const snowfall = document.getElementById('snowfall');
+            const snowflake = document.createElement('div');
+            
+            snowflake.classList.add('snowflake');
+            
+            // Random starting position
+            snowflake.style.left = `${Math.random() * 100}%`;
+            
+            // Random size between 2-10px
+            const size = Math.random() * 8 + 2;
+            snowflake.style.width = `${size}px`;
+            snowflake.style.height = `${size}px`;
+            
+            // Random fall duration between 5-15 seconds
+            const duration = Math.random() * 10 + 5;
+            snowflake.style.animationDuration = `${duration}s`;
+            
+            // Random horizontal drift
+            snowflake.style.animationName = 'fall';
+            snowflake.style.animationTimingFunction = 'linear';
+            
+            snowfall.appendChild(snowflake);
+
+            // Remove snowflake after it falls
+            setTimeout(() => {
+                snowflake.remove();
+            }, duration * 1000);
+        }
+
+        // Create snowflakes continuously
+        function startSnowfall() {
+            setInterval(createSnowflake, 200);
+        }
+
+        // Start snowfall when page loads
+        window.addEventListener('load', startSnowfall);
+    </script>
+</body>
+</html>
